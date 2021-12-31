@@ -23,8 +23,6 @@ provider:
     TODOS_TABLE: Todos-${self:provider.stage}
     ATTACHMENT_S3_BUCKET: serverless-xtian-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    USER_ID_INDEX: userId
-    TODOS_BY_USER_INDEX: TodosByUserIndex
     AUTH_0_JWKS_URL: https://dev-wdpsa3ru.us.auth0.com/.well-known/jwks.json
 
   logs:
@@ -66,12 +64,12 @@ functions:
           method: get
           path: todos
           cors: true
-          auth: Auth
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_BY_USER_INDEX}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -80,7 +78,7 @@ functions:
           method: post
           path: todos
           cors: true
-          auth: Auth
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create a new Todo
@@ -100,7 +98,7 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
-          auth: Auth
+          authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
             summary: Create a new Todo
@@ -121,7 +119,7 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
-          auth: Auth
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -136,7 +134,7 @@ functions:
           method: post
           path: todos/{todoId}/attachment
           cors: true
-          auth: Auth
+          authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -165,26 +163,17 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: todoId
-            AttributeType: S
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: createdAt
+          - AttributeName: todoId
             AttributeType: S
         KeySchema:
-          - AttributeName: todoId
+          - AttributeName: userId
             KeyType: HASH
+          - AttributeName: todoId
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODOS_TABLE}
-        GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODOS_BY_USER_INDEX}
-            KeySchema:
-              - AttributeName: userId
-                KeyType: HASH
-              - AttributeName: createdAt
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL 
+        TableName: ${self:provider.environment.TODOS_TABLE} 
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
