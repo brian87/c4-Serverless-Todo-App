@@ -27,9 +27,9 @@
     "serverless-plugin-tracing": "^2.0.0",
     "serverless-reqvalidator-plugin": "^1.0.4",
     "serverless-webpack": "^5.6.0",
-    "ts-loader": "^5.4.5",
+    "ts-loader": "^9.4.2",
     "typescript": ">=3.8.0",
-    "webpack": "^4.46.0"
+    "webpack": "^5.75.0"
   },
   "author": "Ivan Mushketyk",
   "license": "MIT"
